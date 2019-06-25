@@ -1,0 +1,69 @@
+/run/verbose 1
+#/event/verbose 1
+#/tracking/verbose 1
+
+/g4simple/setRandomSeed true
+
+# Need to set the physics list before we can do some of the other commands. 
+/g4simple/setReferencePhysList Shielding
+#/g4simple/setReferencePhysList QGSP_BERT
+
+# Set GDML file name
+# The bool after the file name turns validation on / off
+/g4simple/setDetectorGDML scanner45_241Am.gdml false
+
+# Set up output. Choose a format:
+#/g4simple/setOutputFormat csv
+#/g4simple/setOutputFormat xml
+/g4simple/setOutputFormat root
+#/g4simple/setOutputFormat hdf5
+
+# Uncomment to override an output's standard option
+#/g4simple/setOutputOption stepwise
+#/g4simple/setOutputOption eventwise
+
+# Change the name of the output file (by default it's g4simple.[ext])
+/analysis/setFileName scanner_241Am_45deg_1mm10mmTungsten_test2.root
+
+# Steps are only written out if they are in a volume that matches a pattern set
+# via the setVolID command
+# Example setting a full volume name (exact match):
+/g4simple/setVolID geDetector_PV 1
+#/g4simple/setVolID collimator_PV 2
+
+# Example using a regular expression to match multiple volumes (in this case
+# they have different replication numbers):
+#/g4simple/setVolID .*Detector.* 1
+# To get all steps in all volumes, comment out all setVolID commands (removes
+# all volume IDs from output), or uncomment the following line to keep the
+# volume IDs:
+#/g4simple/recordAllSteps
+
+/run/initialize
+#/run/setCut 10 micrometer
+# If you want to see the list of available NIST materials (e.g. to help you
+# build your gdml file) uncomment this line
+#/material/nist/listMaterials
+
+# If you want to see the list of all physical volume names (e.g. to set volume
+# IDs above) uncomment this line
+#/g4simple/listPhysVols
+
+# Set up gps after /run/initialize
+# This is for 208Tl events distributed throughout the "source" volume
+/gps/particle ion
+/gps/ion 95 241 0 0
+/gps/energy 0 MeV
+/gps/pos/type Plane
+/gps/pos/shape Circle
+#Conversion electron source
+#/gps/pos/radius 1.5 mm
+#Alpha source
+/gps/pos/radius 1.5 mm
+/gps/pos/centre 1 0 50.05 mm
+/gps/ang/type iso
+#/gps/ang/maxtheta 180 deg
+#/gps/ang/mintheta 178 deg
+#/gps/pos/confine source_PV
+
+/run/beamOn 1000
