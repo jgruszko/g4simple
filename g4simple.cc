@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <regex>
+#include <utility>
 
 #include "G4RunManager.hh"
 #include "G4Run.hh"
@@ -22,6 +23,8 @@
 #include "G4GDMLParser.hh"
 #include "G4TouchableHandle.hh"
 #include "G4PhysicalVolumeStore.hh"
+#include "G4tgbVolumeMgr.hh"
+#include "G4tgrMessenger.hh"
 
 #include "g4root.hh"
 #include "g4xml.hh"
@@ -48,8 +51,7 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
     EOption fOption;
     bool fRecordAllSteps;
 
-    vector<regex> fPatterns;
-    vector<int> fPatternIDs;
+    vector< pair<regex,string> > fPatternPairs;
  
     G4int fNEvents;
     G4int fEventNumber;
@@ -65,6 +67,9 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
     vector<G4double> fLX;
     vector<G4double> fLY;
     vector<G4double> fLZ;
+    vector<G4double> fPdX;
+    vector<G4double> fPdY;
+    vector<G4double> fPdZ;
     vector<G4double> fT;
     vector<G4int> fVolID;
     vector<G4int> fIRep;
@@ -77,8 +82,10 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
 
       fVolIDCmd = new G4UIcommand("/g4simple/setVolID", this);
       fVolIDCmd->SetParameter(new G4UIparameter("pattern", 's', false));
-      fVolIDCmd->SetParameter(new G4UIparameter("id", 'i', false));
-      fVolIDCmd->SetGuidance("Volumes with name matching [pattern] will be given volume ID [id]");
+      fVolIDCmd->SetParameter(new G4UIparameter("replacement", 's', false));
+      fVolIDCmd->SetGuidance("Volumes with name matching [pattern] will be given volume ID "
+                             "based on the [replacement] rule. Replacement rule must produce an integer."
+                             " Patterns which replace to 0 or -1 are forbidden and will be omitted.");
 
       fOutputFormatCmd = new G4UIcmdWithAString("/g4simple/setOutputFormat", this);
       string candidates = "csv xml root";
@@ -140,15 +147,10 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
       if(command == fVolIDCmd) {
         istringstream iss(newValues);
         string pattern;
-        int id;
-        iss >> pattern >> id;
-        if(id == 0 || id == -1) {
-          cout << "Pattern " << pattern << ": Can't use ID = " << id << endl;
-        }
-        else {
-          fPatterns.push_back(regex(pattern));
-          fPatternIDs.push_back(id);
-        }
+        string replacement;
+        iss >> pattern >> replacement;
+        cout << "in: " << pattern << ' ' << replacement << endl;
+        fPatternPairs.push_back(pair<regex,string>(regex(pattern),replacement));
       }
       if(command == fOutputFormatCmd) {
         // also set recommended options.
@@ -193,6 +195,9 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
       fLX.clear();
       fLY.clear();
       fLZ.clear();
+      fPdX.clear();
+      fPdY.clear();
+      fPdZ.clear();
       fT.clear();
       fVolID.clear();
       fIRep.clear();
@@ -216,6 +221,9 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
         man->FillNtupleDColumn(row++, fLX[i]);
         man->FillNtupleDColumn(row++, fLY[i]);
         man->FillNtupleDColumn(row++, fLZ[i]);
+        man->FillNtupleDColumn(row++, fPdX[i]);
+        man->FillNtupleDColumn(row++, fPdY[i]);
+        man->FillNtupleDColumn(row++, fPdZ[i]);
         man->FillNtupleDColumn(row++, fT[i]);
         man->FillNtupleIColumn(row++, fVolID[i]);
         man->FillNtupleIColumn(row++, fIRep[i]);
@@ -247,6 +255,9 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
           man->CreateNtupleDColumn("lx", fLX);
           man->CreateNtupleDColumn("ly", fLY);
           man->CreateNtupleDColumn("lz", fLZ);
+          man->CreateNtupleDColumn("pdx", fPdX);
+          man->CreateNtupleDColumn("pdy", fPdY);
+          man->CreateNtupleDColumn("pdz", fPdZ);
           man->CreateNtupleDColumn("t", fT);
           man->CreateNtupleIColumn("volID", fVolID);
           man->CreateNtupleIColumn("iRep", fIRep);
@@ -264,6 +275,9 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
           man->CreateNtupleDColumn("lx");
           man->CreateNtupleDColumn("ly");
           man->CreateNtupleDColumn("lz");
+          man->CreateNtupleDColumn("pdx");
+          man->CreateNtupleDColumn("pdy");
+          man->CreateNtupleDColumn("pdz");
           man->CreateNtupleDColumn("t");
           man->CreateNtupleIColumn("volID");
           man->CreateNtupleIColumn("iRep");
@@ -297,11 +311,20 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
       // the post-step volume
       G4VPhysicalVolume* vpv = step->GetPostStepPoint()->GetPhysicalVolume();
       G4int id = fVolIDMap[vpv];
-      if(id == 0 && fPatterns.size() > 0) {
+      if(id == 0 && fPatternPairs.size() > 0) {
         string name = (vpv == NULL) ? "NULL" : vpv->GetName();
-        for(size_t i=0; i<fPatterns.size(); i++) {
-          if(regex_match(name, fPatterns[i])) {
-            id = fPatternIDs[i];
+        for(auto& pp : fPatternPairs) {
+          if(regex_match(name, pp.first)) {
+            string replaced = regex_replace(name,pp.first,pp.second);
+            cout << "match: " << name << ' ' << /*pp.first.str() << ' ' <<*/ pp.second << ' ' << replaced << endl;
+            //int id_new = stoi(regex_replace(name,pp.first,pp.second));
+            int id_new = stoi(replaced);
+            if (id_new == 0 || id_new == -1) {
+              cout << "Volume " << name << ": Can't use ID = " << id << endl;
+            } 
+            else {
+              id = id_new;
+            }
             break;
           }
         }
@@ -320,14 +343,18 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
         fKE.push_back(step->GetPreStepPoint()->GetKineticEnergy());
         fEDep.push_back(0);
         G4ThreeVector pos = step->GetPreStepPoint()->GetPosition();
-        G4TouchableHandle vol = step->GetPreStepPoint()->GetTouchableHandle();
-        G4ThreeVector lPos = vol->GetHistory()->GetTopTransform().TransformPoint(pos);
         fX.push_back(pos.x());
         fY.push_back(pos.y());
         fZ.push_back(pos.z());
+        G4TouchableHandle vol = step->GetPreStepPoint()->GetTouchableHandle();
+        G4ThreeVector lPos = vol->GetHistory()->GetTopTransform().TransformPoint(pos);
         fLX.push_back(lPos.x());
         fLY.push_back(lPos.y());
         fLZ.push_back(lPos.z());
+        G4ThreeVector momDir = step->GetPreStepPoint()->GetMomentumDirection();
+        fPdX.push_back(momDir.x());
+        fPdY.push_back(momDir.y());
+        fPdZ.push_back(momDir.z());
         fT.push_back(step->GetPreStepPoint()->GetGlobalTime());
         fIRep.push_back(vol->GetReplicaNumber());
 
@@ -349,14 +376,18 @@ class G4SimpleSteppingAction : public G4UserSteppingAction, public G4UImessenger
       fKE.push_back(step->GetTrack()->GetKineticEnergy());
       fEDep.push_back(step->GetTotalEnergyDeposit());
       G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-      G4TouchableHandle vol = step->GetPostStepPoint()->GetTouchableHandle();
-      G4ThreeVector lPos = vol->GetHistory()->GetTopTransform().TransformPoint(pos);
       fX.push_back(pos.x());
       fY.push_back(pos.y());
       fZ.push_back(pos.z());
+      G4TouchableHandle vol = step->GetPostStepPoint()->GetTouchableHandle();
+      G4ThreeVector lPos = vol->GetHistory()->GetTopTransform().TransformPoint(pos);
       fLX.push_back(lPos.x());
       fLY.push_back(lPos.y());
       fLZ.push_back(lPos.z());
+      G4ThreeVector momDir = step->GetPostStepPoint()->GetMomentumDirection();
+      fPdX.push_back(momDir.x());
+      fPdY.push_back(momDir.y());
+      fPdZ.push_back(momDir.z());
       fT.push_back(step->GetPostStepPoint()->GetGlobalTime());
       fIRep.push_back(vol->GetReplicaNumber());
 
@@ -391,6 +422,7 @@ class G4SimpleRunManager : public G4RunManager, public G4UImessenger
     G4UIdirectory* fDirectory;
     G4UIcmdWithAString* fPhysListCmd;
     G4UIcommand* fDetectorCmd;
+    G4UIcommand* fTGDetectorCmd;
     G4UIcmdWithABool* fRandomSeedCmd;
     G4UIcmdWithAString* fListVolsCmd;
 
@@ -409,6 +441,10 @@ class G4SimpleRunManager : public G4RunManager, public G4UImessenger
       fDetectorCmd->SetParameter(validatePar);
       fDetectorCmd->SetGuidance("Provide GDML filename specifying the detector construction");
 
+      fTGDetectorCmd = new G4UIcommand("/g4simple/setDetectorTGFile", this);
+      fTGDetectorCmd->SetParameter(new G4UIparameter("filename", 's', false));
+      fTGDetectorCmd->SetGuidance("Provide text filename specifying the detector construction");
+
       fRandomSeedCmd = new G4UIcmdWithABool("/g4simple/setRandomSeed", this);
       fRandomSeedCmd->SetParameterName("useURandom", true);
       fRandomSeedCmd->SetDefaultValue(false);
@@ -426,6 +462,7 @@ class G4SimpleRunManager : public G4RunManager, public G4UImessenger
       delete fDirectory;
       delete fPhysListCmd;
       delete fDetectorCmd;
+      delete fTGDetectorCmd;
       delete fRandomSeedCmd;
       delete fListVolsCmd;
     }
@@ -444,6 +481,12 @@ class G4SimpleRunManager : public G4RunManager, public G4UImessenger
         G4GDMLParser parser;
         parser.Read(filename, validate == "1" || validate == "true" || validate == "True");
         SetUserInitialization(new G4SimpleDetectorConstruction(parser.GetWorldVolume()));
+      }
+      else if(command == fTGDetectorCmd) {
+        new G4tgrMessenger;
+        G4tgbVolumeMgr* volmgr = G4tgbVolumeMgr::GetInstance();
+        volmgr->AddTextFile(newValues);
+        SetUserInitialization(new G4SimpleDetectorConstruction(volmgr->ReadAndConstructDetector()));
       }
       else if(command == fRandomSeedCmd) {
         bool useURandom = fRandomSeedCmd->GetNewBoolValue(newValues);
