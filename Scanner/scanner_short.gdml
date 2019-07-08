@@ -11,14 +11,14 @@ xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/re
     <quantity name="geR" type="length" value="3.5" unit="cm" />
     <quantity name="geH" type="length" value="7" unit="cm" />
 
-    <quantity name="sourceR" type="length" value="1.5" unit="mm" />
+    <quantity name="sourceR" type="length" value="2.5" unit="mm" />
     <quantity name="sourceH" type="length" value="0.25" unit="mm" />
-    <position name="sourcePos" unit="mm" x="1" y="0" z="47.65"/>
+    <position name="sourcePos" unit="mm" x="1" y="0" z="45.25"/>
     
     <quantity name="collimatorInnerR" type="length" value="1" unit="mm" />
     <quantity name="collimatorOuterR" type="length" value="35" unit="mm" />
     <quantity name="collimatorH" type="length" value="5" unit="mm" />
-    <position name="collimatorPos" unit="mm" x="1" y="0" z="45"/>
+    <position name="collimatorPos" unit="mm" x="1" y="0" z="42.5"/>
 
     <position name="origin" x="0" y="0" z="0"/>
     <rotation name="noRotation" z="0"/>
