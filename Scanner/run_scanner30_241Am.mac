@@ -1,18 +1,16 @@
 /run/verbose 1
 #/event/verbose 1
 #/tracking/verbose 1
-/g4simple/setReferencePhysList QGSP_BERT
 
-/control/getEnv G4INSTALL
 /g4simple/setRandomSeed true
-#/random/setSeed 12345678
 
 # Need to set the physics list before we can do some of the other commands. 
-#/g4simple/setReferencePhysList Shielding
+/g4simple/setReferencePhysList Shielding
+#/g4simple/setReferencePhysList QGSP_BERT
 
 # Set GDML file name
 # The bool after the file name turns validation on / off
-/g4simple/setDetectorGDML scanner_noCollimator.gdml false
+/g4simple/setDetectorGDML scanner30_241Am.gdml false
 
 # Set up output. Choose a format:
 #/g4simple/setOutputFormat csv
@@ -25,12 +23,12 @@
 #/g4simple/setOutputOption eventwise
 
 # Change the name of the output file (by default it's g4simple.[ext])
-#/analysis/setFileName scanner_241Am_noCollimator_single.root
+/analysis/setFileName /Users/jgruszko/Data/LEGEND/SURF_Scanner/sims/WCollimator/0p5mm10mmEA18/241Am/30deg/raw/scanner_241Am_30deg_0p5mm10mmEA18_realisticSource_temp.root
 
 # Steps are only written out if they are in a volume that matches a pattern set
 # via the setVolID command
 # Example setting a full volume name (exact match):
-#/g4simple/setVolID geDetector_PV 1
+/g4simple/setVolID geDetector_PV 1
 #/g4simple/setVolID collimator_PV 2
 
 # Example using a regular expression to match multiple volumes (in this case
@@ -39,7 +37,7 @@
 # To get all steps in all volumes, comment out all setVolID commands (removes
 # all volume IDs from output), or uncomment the following line to keep the
 # volume IDs:
-/g4simple/recordAllSteps
+#/g4simple/recordAllSteps
 
 /run/initialize
 #/run/setCut 10 micrometer
@@ -55,18 +53,12 @@
 # This is for 208Tl events distributed throughout the "source" volume
 /gps/particle ion
 /gps/ion 95 241 0 0
-#/gps/ion 48 109 0 0
 /gps/energy 0 MeV
 /gps/pos/type Plane
 /gps/pos/shape Circle
 #Conversion electron source
-#/gps/pos/radius 1.5 mm
-#Alpha source
-/gps/pos/radius 3.5 mm
-/gps/pos/centre 1 0 50.05 mm
-#/gps/ang/type iso
-/gps/ang/maxtheta 180 deg
-/gps/ang/mintheta 178 deg
-#/gps/pos/confine source_PV
+/gps/pos/radius 2.5 mm
+/gps/pos/centre 1 -20.5 49.05 mm
+/gps/ang/type iso
 
-/run/beamOn 100
+/run/beamOn 1000000

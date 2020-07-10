@@ -2,7 +2,8 @@
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
 
-  <define>
+<define>
+    <quantity name="EA18_density" type="density" value="18" unit="g/cm3" />
     <quantity name="worldR" type="length" value="100" unit="m" />
 
     <quantity name="cavityS" type="length" value="0.2" unit="m" />
@@ -11,21 +12,39 @@ xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/re
     <quantity name="geR" type="length" value="3.5" unit="cm" />
     <quantity name="geH" type="length" value="7" unit="cm" />
 
-    <quantity name="sourceR" type="length" value="2.5" unit="mm" />
+    <quantity name="sourceR" type="length" value="3.0" unit="mm" />
     <quantity name="sourceH" type="length" value="0.25" unit="mm" />
-    <position name="sourcePos" unit="mm" x="1" y="0" z="50.125"/>
+    <!-- <position name="sourcePos" unit="mm" x="1" y="0" z="49.125"/> -->
+    <position name="sourcePos" unit="mm" x="1" y="0" z="55.2"/>
     
-    <quantity name="collimatorInnerR" type="length" value="1" unit="mm" />
+    <quantity name="mylarH" type="length" value=".0064" unit="mm" />
+    <!-- <position name="mylarPos" unit="mm" x="1" y="0" z="48.87"/> -->
+    <position name="mylarPos" unit="mm" x="1" y="0" z="55.05"/>
+    
+    <quantity name="collimatorInnerR" type="length" value="0.5" unit="mm" />
     <quantity name="collimatorOuterR" type="length" value="35" unit="mm" />
-    <quantity name="collimatorH" type="length" value="10" unit="mm" />
-    <position name="collimatorPos" unit="mm" x="1" y="0" z="45"/>
+    <!-- <quantity name="collimatorH" type="length" value="8" unit="mm" /> -->
+    <quantity name="collimatorH" type="length" value="15" unit="mm" />
+    <!-- <position name="collimatorPos" unit="mm" x="1" y="0" z="44"/> -->
+    <position name="collimatorPos" unit="mm" x="1" y="0" z="47.5"/>
+    <quantity name="collimatorCapInnerR" type="length" value="2.5" unit="mm" />
+    <quantity name="collimatorCapH" type="length" value="10" unit="mm" />
+    <!-- <position name="collimatorCapPos" unit="mm" x="1" y="0" z="55.5"/> -->
+    <position name="collimatorCapPos" unit="mm" x="1" y="0" z="65"/>
 
     <position name="origin" x="0" y="0" z="0"/>
     <rotation name="noRotation" z="0"/>
   </define>
 
-  <materials/>
-
+  <materials>
+	  <material name="EA18" formula="ea18">
+		  <D value="18.0" unit="g/cm3" />
+		  <fraction n="0.95" ref="G4_W" />
+		  <fraction n="0.035" ref="G4_Ni" />
+		  <fraction n="0.015" ref="G4_Cu" />
+          </material>
+	  
+  </materials>
   <solids>
     <orb name="worldSphere" r="worldR"/>
     <box name="shieldBox" x="shieldS" y="shieldS" z="shieldS"/>
@@ -33,11 +52,13 @@ xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/re
     <tube name="cavityCyl" rmax = "collimatorInnerR" z="2*collimatorH" deltaphi = "2*pi"/>
     <tube name="geCyl" rmax="geR" z="geH" deltaphi="2*pi"/>
     <tube name="sourceCyl" rmax="sourceR" z="sourceH" deltaphi="2*pi"/>
+    <tube name="mylarCyl" rmax="sourceR" z="mylarH" deltaphi="2*pi"/>
     <tube name="collimatorCyl" rmax="collimatorOuterR" z="collimatorH" deltaphi="2*pi"/>
     <subtraction name="collimatorBore">
       <first ref="collimatorCyl"/> <second ref="cavityCyl"/>
       <positionref ref="origin"/> <rotationref ref="noRotation"/>
     </subtraction>
+    <tube name="collimatorCapCyl" rmin="collimatorCapInnerR" rmax="collimatorOuterR" z="collimatorCapH" deltaphi="2*pi"/>
   </solids>
 
 
@@ -52,11 +73,20 @@ xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/re
       <solidref ref="sourceCyl"/>
     </volume>
     
+    <volume name="mylarFilm">
+      <materialref ref="G4_MYLAR"/>
+      <solidref ref="mylarCyl"/>
+    </volume>
+    
     <volume name="collimator">
-      <materialref ref="G4_W"/>
+      <materialref ref="EA18"/>
       <solidref ref="collimatorBore"/>
     </volume>
     
+    <volume name="collimatorCap">
+      <materialref ref="G4_Cu"/>
+      <solidref ref="collimatorCapCyl"/>
+    </volume>
     <volume name="cavity">
       <materialref ref="G4_Galactic"/>
       <solidref ref="cavityBox"/>
@@ -71,8 +101,18 @@ xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/re
         <rotationref ref="noRotation"/>
       </physvol>
       <physvol>
+        <volumeref ref="mylarFilm"/>
+        <positionref ref="mylarPos"/>
+        <rotationref ref="noRotation"/>
+      </physvol>
+      <physvol>
 	<volumeref ref="collimator"/>
 	<positionref ref="collimatorPos"/>
+	<rotationref ref="noRotation"/>
+      </physvol>
+      <physvol>
+	<volumeref ref="collimatorCap"/>
+	<positionref ref="collimatorCapPos"/>
 	<rotationref ref="noRotation"/>
       </physvol>
     </volume>

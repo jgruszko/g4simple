@@ -10,7 +10,7 @@
 
 # Set GDML file name
 # The bool after the file name turns validation on / off
-/g4simple/setDetectorGDML scanner_short.gdml false
+/g4simple/setDetectorGDML scanner90_137Cs_realisticSource.gdml false
 
 # Set up output. Choose a format:
 #/g4simple/setOutputFormat csv
@@ -23,7 +23,7 @@
 #/g4simple/setOutputOption eventwise
 
 # Change the name of the output file (by default it's g4simple.[ext])
-/analysis/setFileName scanner_137Cs_90deg_1mm5mmTungsten_1min_iso.root
+/analysis/setFileName /Users/jgruszko/Data/LEGEND/SURF_Scanner/sims/WCollimator/0p5mm15mmEA18/137Cs/90deg/raw/scanner_137Cs_90deg_0p5mm15mmEA18_realisticSource_temp.root
 
 # Steps are only written out if they are in a volume that matches a pattern set
 # via the setVolID command
@@ -57,12 +57,10 @@
 /gps/pos/type Plane
 /gps/pos/shape Circle
 #Conversion electron source
-/gps/pos/radius 1 mm
-#/gps/pos/centre 1 0 50.05 mm
-/gps/pos/centre 1 0 45.05 mm
+/gps/pos/radius 1.5 mm
+# /gps/pos/centre 1 0 48.9 mm
+/gps/pos/centre 1 0 55.06 mm
 /gps/ang/type iso
-#/gps/ang/maxtheta 180 deg
-#/gps/ang/mintheta 90 deg
-#/gps/pos/confine source_PV
 
-/run/beamOn 888000
+/run/beamOn 5000000
+#/run/beamOn 500000

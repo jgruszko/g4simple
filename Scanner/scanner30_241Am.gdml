@@ -14,19 +14,18 @@ xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/re
 
     <quantity name="sourceR" type="length" value="2.5" unit="mm" />
     <quantity name="sourceH" type="length" value="0.25" unit="mm" />
-    <position name="sourcePos" unit="mm" x="1" y="-14" z="50.125"/>
+    <position name="sourcePos" unit="mm" x="1" y="-20.5" z="50.125"/>
     
     <quantity name="collimatorInnerR" type="length" value="0.5" unit="mm" />
     <quantity name="collimatorOuterR" type="length" value="35" unit="mm" />
     <quantity name="collimatorH" type="length" value="10" unit="mm" />
-    <position name="collimatorPos" unit="mm" x="1" y="-14" z="44"/>
+    <position name="collimatorPos" unit="mm" x="1" y="-18" z="44"/>
     <quantity name="collimatorCapH" type="length" value="10" unit="mm" />
-    <position name="collimatorCapPos" unit="mm" x="1" y="-14" z="56.5"/>
-
+    <position name="collimatorCapPos" unit="mm" x="1" y="-20.5" z="56.5"/>
     <position name="origin" x="0" y="0" z="0"/>
-    <position name="boreShift" x="0" y="4" z="0" unit="mm" />
+    <position name="boreShift" x="0" y="4.33" z="0" unit="mm" />
     <rotation name="noRotation" z="0"/>
-    <rotation name="collimatorRot" x=".25*pi"/>
+    <rotation name="collimatorRot" x=".33*pi"/>
   </define>
 
   <materials>
@@ -42,7 +41,7 @@ xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/re
     <orb name="worldSphere" r="worldR"/>
     <box name="shieldBox" x="shieldS" y="shieldS" z="shieldS"/>
     <box name="cavityBox" x="cavityS" y="cavityS" z="cavityS"/>
-    <tube name="cavityCyl" rmax = "collimatorInnerR" z="2*collimatorH" deltaphi = "2*pi"/>
+    <tube name="cavityCyl" rmax = "collimatorInnerR" z="3*collimatorH" deltaphi = "2*pi"/>
     <tube name="geCyl" rmax="geR" z="geH" deltaphi="2*pi"/>
     <tube name="sourceCyl" rmax="sourceR" z="sourceH" deltaphi="2*pi"/>
     <tube name="collimatorCyl" rmax="collimatorOuterR" z="collimatorH" deltaphi="2*pi"/>

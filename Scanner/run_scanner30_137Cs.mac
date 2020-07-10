@@ -10,7 +10,7 @@
 
 # Set GDML file name
 # The bool after the file name turns validation on / off
-/g4simple/setDetectorGDML scanner45_241Am.gdml false
+/g4simple/setDetectorGDML scanner30_137Cs.gdml false
 
 # Set up output. Choose a format:
 #/g4simple/setOutputFormat csv
@@ -23,7 +23,7 @@
 #/g4simple/setOutputOption eventwise
 
 # Change the name of the output file (by default it's g4simple.[ext])
-/analysis/setFileName scanner_241Am_45deg_1mm10mmTungsten_test2.root
+/analysis/setFileName /Users/jgruszko/Data/LEGEND/SURF_Scanner/sims/WCollimator/0p5mm8mmEA18/137Cs/30deg/raw/scanner_137Cs_30deg_0p5mm8mmEA18_temp.root
 
 # Steps are only written out if they are in a volume that matches a pattern set
 # via the setVolID command
@@ -52,18 +52,14 @@
 # Set up gps after /run/initialize
 # This is for 208Tl events distributed throughout the "source" volume
 /gps/particle ion
-/gps/ion 95 241 0 0
+/gps/ion 55 137 0 0
 /gps/energy 0 MeV
 /gps/pos/type Plane
 /gps/pos/shape Circle
 #Conversion electron source
-#/gps/pos/radius 1.5 mm
-#Alpha source
-/gps/pos/radius 1.5 mm
-/gps/pos/centre 1 0 50.05 mm
+/gps/pos/radius 1 mm
+/gps/pos/centre 1 -20.5 48.05 mm
 /gps/ang/type iso
-#/gps/ang/maxtheta 180 deg
-#/gps/ang/mintheta 178 deg
-#/gps/pos/confine source_PV
 
-/run/beamOn 1000
+/run/beamOn 5000000
+#/run/beamOn 500

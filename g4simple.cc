@@ -497,7 +497,10 @@ class G4SimpleRunManager : public G4RunManager, public G4UImessenger
           cout << "setRandomSeed: couldn't open " << path << ". Your seed is not set." << endl;
           return;
         }
-
+	else {
+	  cout<<"Random command: "<< useURandom<<endl;
+	  cout<<"Using random path: "<<path<<endl;
+	}
         long seed;
         devrandom.read((char*)(&seed), sizeof(long));
 

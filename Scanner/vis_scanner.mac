@@ -6,7 +6,8 @@
 /control/getEnv G4INSTALL
 /g4simple/setRandomSeed true
 #/g4simple/setDetectorGDML {G4INSTALL}/../examples/extended/persistency/gdml/G01/assembly.gdml
-/g4simple/setDetectorGDML scanner_short.gdml false
+#/g4simple/setDetectorGDML scanner_short.gdml false
+/g4simple/setDetectorGDML scanner30_137Cs.gdml false
 
 /run/initialize
 /g4simple/setRandomSeed true
@@ -43,14 +44,18 @@
 
 #Add in the source
 /gps/particle ion
-/gps/ion 55 137 0 0
+#/gps/ion 55 137 0 0
+/gps/ion 95 241 0 0
 #/gps/ion 56 133 0 0
 /gps/energy 0 MeV
 /gps/pos/type Plane
 /gps/pos/shape Circle
-/gps/pos/radius 1 mm
-/gps/pos/centre 1 0 50.05  mm
-/gps/ang/type iso
+#/gps/pos/radius 1 mm
+/gps/pos/radius 0.1 mm
+/gps/pos/centre 1 -20 48.05 mm
+#/gps/ang/type iso
+/gps/ang/maxtheta 120 deg
+/gps/ang/mintheta 118 deg
 
 #Things for drawing trajectories
 /vis/viewer/set/style wireframe
@@ -66,7 +71,7 @@
 /vis/filtering/trajectories/particleFilter-0/invert true
 /vis/filtering/trajectories/particleFilter-0/active true
 /vis/scene/endOfEventAction accumulate
-/run/beamOn 10
+/run/beamOn 5
 
 
 # set print mode to vectored
